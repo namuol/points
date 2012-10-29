@@ -543,6 +543,10 @@ html ->
 
             el.find('button.claim').click (e) ->
               # We assume obj is a Reward
+              cost = parseFloat $(@).data 'cost'
+              if cost > yourScore
+                alert 'You cannot afford that!'
+                return
               claimed = new RewardClaimed
               claimed.set 'name', obj.get 'name'
               claimed.set 'cost', obj.get 'cost'
@@ -563,37 +567,48 @@ html ->
 
             return el
 
+          window.updateClaimButtons = ->
+            $('button.claim').each ->
+              cost = parseFloat $(@).data 'cost'
+
+              if (cost?) and (yourScore >= cost)
+                $(@).attr 'disabled', undefined
+              else
+                $(@).attr 'disabled', 'disabled'
+
           addYourChore = (chore, master_slave) ->
-            $('#your_chores').append addObj chore, master_slave, chore_template
+            $('#your_chores').prepend addObj chore, master_slave, chore_template
 
           addYourChorePerformed = (chore, master_slave) ->
             slaveScore += (parseFloat(chore.get('value')) or 0)
             $('.master_slave_points').html slaveScore or 'no'
-            $('#your_chores_performed').append addObj chore, master_slave, chore_performed_template
+            $('#your_chores_performed').prepend addObj chore, master_slave, chore_performed_template
 
           addYourReward = (reward, master_slave) ->
-            $('#your_rewards').append addObj reward, master_slave, reward_template
+            $('#your_rewards').prepend addObj reward, master_slave, reward_template
 
           addYourRewardClaimed = (reward, master_slave) ->
             slaveScore -= (parseFloat(reward.get('cost')) or 0)
             $('.master_slave_points').html slaveScore or 'no'
-            $('#your_rewards_claimed').append addObj reward, master_slave, your_reward_claimed_template
+            $('#your_rewards_claimed').prepend addObj reward, master_slave, your_reward_claimed_template
 
           addTheirChore = (chore, master_slave) ->
-            $('#their_chores').append addObj chore, master_slave, their_chore_template
+            $('#their_chores').prepend addObj chore, master_slave, their_chore_template
 
           addTheirChorePerformed = (chore, master_slave) ->
             yourScore += (parseFloat(chore.get('value')) or 0)
             $('.your_points').html yourScore or 'no'
-            $('#their_chores_performed').append addObj chore, master_slave, their_chore_performed_template
+            $('#their_chores_performed').prepend addObj chore, master_slave, their_chore_performed_template
+            updateClaimButtons()
 
           addTheirReward = (reward, master_slave) ->
-            $('#their_rewards').append addObj reward, master_slave, their_reward_template
+            $('#their_rewards').prepend addObj reward, master_slave, their_reward_template
 
           addTheirRewardClaimed = (reward, master_slave) ->
             yourScore -= (parseFloat(reward.get('cost')) or 0)
             $('.your_points').html yourScore or 'no'
-            $('#their_rewards_claimed').append addObj reward, master_slave, their_reward_claimed_template
+            $('#their_rewards_claimed').prepend addObj reward, master_slave, their_reward_claimed_template
+            updateClaimButtons()
 
           populateChoresAndRewards = (master_slave) ->
             if $('body').data('populatedFor') is master_slave.get('username')
@@ -601,6 +616,7 @@ html ->
             
             slaveScore = 0
             yourScore = 0
+            updateClaimButtons()
 
             $('body').data
               populatedFor: master_slave.get 'username'
@@ -609,6 +625,7 @@ html ->
             chore_query = new Parse.Query Chore
             chore_query.equalTo 'user', Parse.User.current()
             chore_query.equalTo 'slave', master_slave
+            chore_query.ascending 'value'
             chore_query.find
               success: (chores) ->
                 $('#your_chores').html ''
@@ -621,6 +638,7 @@ html ->
             chore_query = new Parse.Query Chore
             chore_query.equalTo 'user', master_slave
             chore_query.equalTo 'slave', Parse.User.current()
+            chore_query.ascending 'value'
             chore_query.find
               success: (chores) ->
                 $('#their_chores').html ''
@@ -633,7 +651,7 @@ html ->
             chore_query = new Parse.Query ChorePerformed
             chore_query.equalTo 'master', Parse.User.current()
             chore_query.equalTo 'slave', master_slave
-            chore_query.descending 'createdAt'
+            chore_query.ascending 'createdAt'
             chore_query.find
               success: (chores) ->
                 $('#your_chores_performed').html ''
@@ -646,7 +664,7 @@ html ->
             chore_query = new Parse.Query ChorePerformed
             chore_query.equalTo 'master', master_slave
             chore_query.equalTo 'slave', Parse.User.current()
-            chore_query.descending 'createdAt'
+            chore_query.ascending 'createdAt'
             chore_query.find
               success: (chores) ->
                 $('#their_chores_performed').html ''
@@ -659,7 +677,7 @@ html ->
             $('#your_rewards').html 'Please Wait...'
             reward_query = new Parse.Query Reward
             reward_query.equalTo 'user', Parse.User.current()
-            reward_query.descending 'cost'
+            reward_query.ascending 'cost'
             if master_slave?
               reward_query.equalTo 'slave', master_slave
             reward_query.find
@@ -674,20 +692,12 @@ html ->
             reward_query = new Parse.Query Reward
             reward_query.equalTo 'user', master_slave
             reward_query.equalTo 'slave', Parse.User.current()
-            reward_query.descending 'cost'
+            reward_query.ascending 'cost'
             reward_query.find
               success: (rewards) ->
                 $('#their_rewards').html ''
                 for reward in rewards
                   addTheirReward reward, master_slave
-
-                $('button.claim').each ->
-                  cost = parseFloat $(@).data 'cost'
-
-                  if cost? and yourScore >= cost
-                    $(@).attr 'disabled', undefined
-                  else
-                    $(@).attr 'disabled', 'disabled'
 
               error: (error) ->
                 alert error.message
@@ -696,7 +706,7 @@ html ->
             reward_query = new Parse.Query RewardClaimed
             reward_query.equalTo 'master', Parse.User.current()
             reward_query.equalTo 'slave', master_slave
-            reward_query.descending 'createdAt'
+            reward_query.ascending 'createdAt'
             reward_query.find
               success: (rewards) ->
                 $('#your_rewards_claimed').html ''
@@ -709,7 +719,7 @@ html ->
             reward_query = new Parse.Query RewardClaimed
             reward_query.equalTo 'master', master_slave
             reward_query.equalTo 'slave', Parse.User.current()
-            reward_query.descending 'createdAt'
+            reward_query.ascending 'createdAt'
             reward_query.find
               success: (rewards) ->
                 $('#their_rewards_claimed').html ''

@@ -1,0 +1,46 @@
+body {
+  padding-top: 60px;
+}
+.open > .dropdown-menu {
+  padding: 10px;
+}
+#logged_in {
+  display: none;
+}
+.modal-body .control-group {
+  margin-bottom: 5px !important;
+}
+.content {
+  display: none;
+}
+[contenteditable=true] {
+  display: inline-block;
+  min-width: 20px;
+  padding: 2px;
+}
+*:hover > [contenteditable=true],
+[contenteditable=true]:focus {
+  padding: 1px;
+  border: 1px dotted #aaa;
+}
+.item_list {
+  margin: 5px;
+  list-style: none;
+}
+.item_list li {
+  padding: 5px 0;
+}
+#yours_link,
+#theirs_link {
+  display: none;
+}
+button.award,
+button.claim {
+  float: right;
+}
+button.destroy {
+  float: left;
+}
+#content li:nth-child(odd) {
+  background: #eee;
+}

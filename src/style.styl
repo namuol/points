@@ -7,17 +7,19 @@ body
 #logged_in
   display none
 
-#content
-  display none
-
 .modal-body .control-group
   margin-bottom 5px !important
 
+.content
+  display none
+
 [contenteditable=true]
-  padding 5px
+  display inline-block
+  min-width 20px
+  padding 2px
 
 *:hover > [contenteditable=true], [contenteditable=true]:focus
-  padding 4px
+  padding 1px
   border 1px dotted #aaa
 
 .item_list
@@ -26,3 +28,15 @@ body
 
 .item_list li
   padding 5px 0
+
+#yours_link, #theirs_link
+  display none
+
+button.award, button.claim
+  float right
+
+button.destroy
+  float left
+
+#content li:nth-child(odd)
+  background #eee

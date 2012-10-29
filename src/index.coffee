@@ -14,7 +14,7 @@ html ->
             span class:'icon-bar'
             span class:'icon-bar'
             span class:'icon-bar'
-          a class:'brand', 'Points System'
+          a href:'#/', class:'brand', 'Points System'
           div class:'nav-collapse collapse', ->
           div id:'not_logged_in', ->
             ul id:'log-in-nav', class:'nav pull-right', ->
@@ -102,7 +102,7 @@ html ->
               button id:'myself', class:'btn btn-info', ->
                 i class:'icon-white icon-user'
                 text '&nbsp;'
-                span id:'username_display'
+                span class:'username_display'
               text '&nbsp;'
               button
                 id:'log-out'
@@ -112,21 +112,63 @@ html ->
 
 
     div id:'content', class:'container', ->
-      div id:'must_login', class:'row content', ->
+      div id:'main', class:'row content', ->
         h1 'Points.'
-        section 'You must sign up/log in.'
+      
+      div id:'user', class:'content', ->
+        h3 ->
+          text 'User: '
+          span class:'user_username'
+
+        div class:'content not_subscribed', ->
+          br ''
+          button id:'subscribe', class:'btn btn-success btn-xlarge', ->
+            i class:'icon-hand-right icon-white'
+            strong ' Add Master/Slave'
+        div class:'content subscribed', ->
+          text 'You are already subscribed to '
+          span class:'user_username'
+
+      div id:'current_user', class:'content', ->
+        p ->
+          text 'Give this url to your friend(s): '
+          br ''
+          div id:'my_url', class:'well well-small', ->
+            a ''
+          br ''
+          
+
+        form id:'update_myself', class:'form-horizontal', ->
+          div class:'control-group', ->
+            label class:'control-label', for:'my_username', 'Username'
+            div class:'controls', ->
+              input id:'my_username', class:'input-xlarge', type:'text', name:'my_username'
+
+          div class:'control-group', ->
+            label class:'control-label', for:'credit_singular', 'Your Point Name'
+            div class:'controls', ->
+              input id:'credit_singular', class:'input-xlarge', type:'text', name:'credit_singular'
+          div class:'control-group', ->
+            label class:'control-label', for:'credit_plural', 'Your Point Name (Plural)'
+            div class:'controls', ->
+              input id:'credit_plural', class:'input-xlarge', type:'text', name:'credit_plural'
+          div class:'control-group', ->
+            div class:'controls', ->
+              button type:'submit', class:'btn btn-primary', ->
+                strong 'Update'
 
       div id:'yours', class:'content', ->
         div class:'row', ->
-          span class:'master_slave_username'
-          text ' has earned '
-          span class:'master_slave_points'
-          text ' '
-          span class:'master_slave_credit_plural'
-          text '.'
+          h4 ->
+            span class:'master_slave_username'
+            text ' has earned '
+            span class:'master_slave_points'
+            text ' '
+            span class:'user_credit_plural'
+            text '.'
 
         div class:'row', ->
-          div class:'span5', ->
+          div class:'span6', ->
             legend ->
               text 'Chores to assign to '
               span class:'master_slave_username'
@@ -135,14 +177,14 @@ html ->
                   i class:'icon-plus icon-white'
             ul id:'your_chores', class:'item_list'
 
-          div class:'span5', ->
+          div class:'span6', ->
             legend ->
               text 'Chores performed by '
               span class:'master_slave_username'
             ul id:'your_chores_performed', class:'item_list'
       
         div class:'row', ->
-          div class:'span5', ->
+          div class:'span6', ->
             legend ->
               text 'Rewards for '
               span class:'master_slave_username'
@@ -152,7 +194,7 @@ html ->
                   i class:'icon-plus icon-white'
             ul id:'your_rewards', class:'item_list'
 
-          div class:'span5', ->
+          div class:'span6', ->
             legend ->
               text 'Rewards claimed by '
               span class:'master_slave_username'
@@ -161,26 +203,34 @@ html ->
 
       div id:'theirs', class:'content', ->
         div class:'row', ->
-          div class:'span5', ->
+          h4 ->
+            text 'You have earned '
+            span class:'your_points'
+            text ' '
+            span class:'master_slave_credit_plural'
+            text '.'
+
+        div class:'row', ->
+          div class:'span6', ->
             legend ->
               text 'Chores to perform for '
               span class:'master_slave_username'
             ul id:'their_chores', class:'item_list'
 
-          div class:'span5', ->
+          div class:'span6', ->
             legend ->
               text 'Chores performed for '
               span class:'master_slave_username'
             ul id:'their_chores_performed', class:'item_list'
 
         div class:'row', ->
-          div class:'span5', ->
+          div class:'span6', ->
             legend ->
               text 'Rewards to claim from '
               span class:'master_slave_username'
             ul id:'their_rewards', class:'item_list'
 
-          div class:'span5', ->
+          div class:'span6', ->
             legend ->
               text 'Rewards claimed from '
               span class:'master_slave_username'
@@ -189,6 +239,7 @@ html ->
 
     script src:'//code.jquery.com/jquery.min.js'
     script src:'//www.parsecdn.com/js/parse-1.1.6.min.js'
+    script src:'//cdnjs.cloudflare.com/ajax/libs/moment.js/1.7.2/moment.min.js'
     script src:'//cdnjs.cloudflare.com/ajax/libs/sammy.js/0.7.1/sammy.min.js'
     script src:'bootstrap/js/bootstrap.min.js'
     script src:'coffeecup.js'
@@ -236,7 +287,22 @@ html ->
           text Parse.User.current().get('credit_plural') or 'points'
           text ' for '
           text @obj.get 'name'
-          text '. '
+          text ' '
+          text moment(@obj.createdAt).fromNow()
+          text '.'
+
+      their_chore_performed_template = coffeecup.compile ->
+        li 'data-chore-id':(''+@obj.id), ->
+          text '&nbsp;'
+          text 'You earned '
+          text @obj.get 'value'
+          text ' '
+          text @master_slave.get('credit_plural') or 'points'
+          text ' for '
+          text @obj.get 'name'
+          text ' '
+          text moment(@obj.createdAt).fromNow()
+          text '.'
 
       reward_template = coffeecup.compile ->
         li 'data-reward-id':(''+@obj.id), ->
@@ -254,6 +320,33 @@ html ->
           text Parse.User.current().get('credit_plural') or 'points'
           text '.'
 
+      your_reward_claimed_template = coffeecup.compile ->
+        li 'data-reward-id':(''+@obj.id), ->
+          text '&nbsp;'
+          text @master_slave.get 'username'
+          text ' spent '
+          text @obj.get 'cost'
+          text ' '
+          text Parse.User.current().get('credit_plural') or 'points'
+          text ' to '
+          text @obj.get 'name'
+          text ' '
+          text moment(@obj.createdAt).fromNow()
+          text '.'
+
+      their_reward_claimed_template = coffeecup.compile ->
+        li 'data-reward-id':(''+@obj.id), ->
+          text '&nbsp;'
+          text 'You spent '
+          text @obj.get 'cost'
+          text ' '
+          text @master_slave.get('credit_plural') or 'points'
+          text ' to '
+          text @obj.get 'name'
+          text ' '
+          text moment(@obj.createdAt).fromNow()
+          text '.'
+
       their_chore_template = coffeecup.compile ->
         li 'data-chore-id':(''+@obj.id), ->
           text ' You may earn '
@@ -263,12 +356,6 @@ html ->
           text ' for '
           text @obj.get 'name'
           text '.'
-          return
-          text ' points from '
-          text @master_slave.get 'username'
-          text '.'
-
-      canAfford = (user, reward) ->
 
       their_reward_template = coffeecup.compile ->
         li 'data-reward-id':(''+@obj.id), ->
@@ -278,14 +365,9 @@ html ->
           text @obj.get 'cost'
           text ' '
           text @master_slave.get('credit_plural') or 'points'
-          text '.'
-          return
-          text ' points from '
-          text @master_slave.get 'username'
           text '. '
-          if canAfford @master_slave, @obj
-            button class:'btn btn-mini btn-success award', ->
-              i class:'icon-share-alt icon-white'
+          button class:'btn btn-mini btn-success claim', 'data-cost':''+@obj.get('cost'), ->
+            i class:'icon-shopping-cart icon-white'
 
       master_slave_dropdown_template = coffeecup.compile ->
         a id:'master_slave_drop', href:'#', role:'button', class:'dropdown-toggle', 'data-toggle':'dropdown', ->
@@ -294,7 +376,10 @@ html ->
           text '&nbsp;'
           b class:'caret'
         ul class:'dropdown-menu', role:'menu', 'aria-labelledby':'master_slave_drop', ->
-          for user in @subscriptions
+          if @subscriptions.length is 0
+            li -> 'You must add some friends, first! Ask them for their URL!'
+          for sub in @subscriptions
+            user = sub.get 'master_slave'
             li -> a tabindex:-1, href:'#', 'data-username':user.get('username'), ->
               text user.get 'username'
 
@@ -308,53 +393,120 @@ html ->
         Reward = Parse.Object.extend 'Reward'
         ChorePerformed = Parse.Object.extend 'ChorePerformed'
         RewardClaimed = Parse.Object.extend 'RewardClaimed'
+        Subscription = Parse.Object.extend 'Subscription'
+
         readOnly = undefined
+
+        currentUserView = undefined
 
         subscriptions = {}
         currentSlave = undefined
-        yourPoints = 0
-        slavePoints = 0
+        yourScore = 0
+        slaveScore = 0
         acl = undefined
+
+        isSubscribed  = (user, other, callback) ->
+          q = new Parse.Query Subscription
+          q.equalTo 'user', Parse.User.current()
+          q.equalTo 'master_slave', other
+          q.include 'master_slave'
+          q.find
+            success: (results) ->
+              callback null, results.length > 0
+            error: (error) ->
+              callback error, false
 
         app = new Sammy ->
           @get '#/', ->
+            $('.nav .active').removeClass 'active'
             $('.content').hide()
+            $('#main').show()
 
-          @get '#/yours/:username', ->
+          @get '#/user/:id', ->
+            if not Parse.User.current()?
+              alert 'You must be logged in to do that.'
+              @redirect '#/'
+              return
+            $('.nav .active').removeClass 'active'
+            $('.content').hide()
+            $('#user').show()
+            currentUserView = undefined
+
+            if @params.id is Parse.User.current().id
+              url = document.location.toString()
+              $('#my_url a').attr('href',url).html(url)
+              $('#my_username').val Parse.User.current().get('username')
+              $('#credit_singular').val Parse.User.current().get('credit_singular')
+              $('#credit_plural').val Parse.User.current().get('credit_plural')
+              $('#current_user').show()
+            else
+              user_query = new Parse.Query Parse.User
+              user_query.get @params.id,
+                success: (user) ->
+                  $('.user_username').html user.get('username')
+                  isSubscribed Parse.User.current(), user, (error, subscribed) ->
+                    if error?
+                      alert error.message
+                    else
+                      if subscribed
+                        $('.subscribed').show()
+                      else
+                        currentUserView = user
+                        $('.not_subscribed').show()
+                error: (user, error) ->
+                  alert error.message
+
+          yoursOrTheirs = ->
+            $('.content').hide()
             if not Parse.User.current()?
               @redirect '#/'
               return
-
-            user = subscriptions[@params.username]
-            if not user?
-              @redirect '#/'
+            if currentSlave? and (currentSlave.get('username') is @params.username)
               return
 
-            currentSlave = user
-            $('.master_slave_username').html user.get 'username'
-            $('.master_slave_credit_plural').html currentSlave.get('credit_plural') or 'points'
-            acl = new Parse.ACL Parse.User.current()
-            acl.setPublicReadAccess false
-            acl.setPublicWriteAccess false
-            acl.setReadAccess currentSlave, true
+            user_query = new Parse.Query Parse.User
+            user_query.equalTo 'username', @params.username
+            user_query.find
+              error: (user, error) ->
+                alert error.message
 
+              success: (result) =>
+                user = result[0]
+                if not user?
+                  @redirect '#/'
+                  return
+                isSubscribed Parse.User.current(), user, (error, subscribed) =>
+                  if error?
+                    alert error.message
+                  else
+                    if not subscribed
+                      @redirect '#/'
+                      return
+                    $('#yours_link').css('display','inline-block').attr 'href', '#/yours/' + @params.username
+                    $('#theirs_link').css('display','inline-block').attr 'href', '#/theirs/' + @params.username
+                    currentSlave = user
+                    $('.master_slave_username').html @params.username
+                    $('.user_credit_plural').html Parse.User.current().get('credit_plural') or 'points'
+                    $('.master_slave_credit_plural').html currentSlave.get('credit_plural') or 'points'
+                    acl = new Parse.ACL Parse.User.current()
+                    acl.setPublicReadAccess false
+                    acl.setPublicWriteAccess false
+                    acl.setReadAccess currentSlave, true
+
+                    populateChoresAndRewards currentSlave
+                    $('.master_slave_points').html slaveScore or 'no'
+                    $('.your_points').html yourScore or 'no'
+
+          @get '#/yours/:username', ->
+            yoursOrTheirs.call @
             $('.nav .active').removeClass 'active'
             $('.nav [href^="#/yours"]').parent().addClass 'active'
-            $('.content').hide()
-            populateChoresAndRewards subscriptions[@params.username]
-            $('.master_slave_points').html slavePoints or 'no'
-            $('.your_points').html yourPoints or 'no'
             $('#yours').show()
 
           @get '#/theirs/:username', ->
-            if not Parse.User.current()?
-              @redirect '#/'
-              return
-
+            yoursOrTheirs.call @
             $('.nav .active').removeClass 'active'
             $('.nav [href^="#/theirs"]').parent().addClass 'active'
-            $('.content').hide()
-            populateChoresAndRewards subscriptions[@params.username]
             $('#theirs').show()
           
           addObj = (obj, master_slave, template) ->
@@ -389,36 +541,66 @@ html ->
                 error: (performed, error) ->
                   alert error.message
 
+            el.find('button.claim').click (e) ->
+              # We assume obj is a Reward
+              claimed = new RewardClaimed
+              claimed.set 'name', obj.get 'name'
+              claimed.set 'cost', obj.get 'cost'
+              claimed.set 'master', currentSlave
+              claimed.set 'slave', Parse.User.current()
+              acl = new Parse.ACL Parse.User.current()
+              acl.setPublicReadAccess false
+              acl.setPublicWriteAccess false
+              acl.setReadAccess currentSlave, true
+              claimed.setACL acl
+              claimed.save null,
+                success: (claimed) ->
+                  claimed = claimed
+                  addTheirRewardClaimed claimed, currentSlave
+                error: (claimed, error) ->
+                  alert error.message
+
+
             return el
 
           addYourChore = (chore, master_slave) ->
             $('#your_chores').append addObj chore, master_slave, chore_template
 
           addYourChorePerformed = (chore, master_slave) ->
-            slavePoints += (parseFloat(chore.get('value')) or 0)
-            $('.master_slave_points').html slavePoints or 'no'
+            slaveScore += (parseFloat(chore.get('value')) or 0)
+            $('.master_slave_points').html slaveScore or 'no'
             $('#your_chores_performed').append addObj chore, master_slave, chore_performed_template
 
           addYourReward = (reward, master_slave) ->
             $('#your_rewards').append addObj reward, master_slave, reward_template
 
+          addYourRewardClaimed = (reward, master_slave) ->
+            slaveScore -= (parseFloat(reward.get('cost')) or 0)
+            $('.master_slave_points').html slaveScore or 'no'
+            $('#your_rewards_claimed').append addObj reward, master_slave, your_reward_claimed_template
+
           addTheirChore = (chore, master_slave) ->
             $('#their_chores').append addObj chore, master_slave, their_chore_template
 
           addTheirChorePerformed = (chore, master_slave) ->
-            yourPoints += (parseFloat(chore.get('value')) or 0)
-            $('.your_points').html yourPoints or 'no'
-            $('#their_chores_performed').append addObj chore, master_slave, chore_performed_template
+            yourScore += (parseFloat(chore.get('value')) or 0)
+            $('.your_points').html yourScore or 'no'
+            $('#their_chores_performed').append addObj chore, master_slave, their_chore_performed_template
 
           addTheirReward = (reward, master_slave) ->
             $('#their_rewards').append addObj reward, master_slave, their_reward_template
+
+          addTheirRewardClaimed = (reward, master_slave) ->
+            yourScore -= (parseFloat(reward.get('cost')) or 0)
+            $('.your_points').html yourScore or 'no'
+            $('#their_rewards_claimed').append addObj reward, master_slave, their_reward_claimed_template
 
           populateChoresAndRewards = (master_slave) ->
             if $('body').data('populatedFor') is master_slave.get('username')
               return
             
-            slavePoints = 0
-            yourPoints = 0
+            slaveScore = 0
+            yourScore = 0
 
             $('body').data
               populatedFor: master_slave.get 'username'
@@ -451,6 +633,7 @@ html ->
             chore_query = new Parse.Query ChorePerformed
             chore_query.equalTo 'master', Parse.User.current()
             chore_query.equalTo 'slave', master_slave
+            chore_query.descending 'createdAt'
             chore_query.find
               success: (chores) ->
                 $('#your_chores_performed').html ''
@@ -463,17 +646,20 @@ html ->
             chore_query = new Parse.Query ChorePerformed
             chore_query.equalTo 'master', master_slave
             chore_query.equalTo 'slave', Parse.User.current()
+            chore_query.descending 'createdAt'
             chore_query.find
               success: (chores) ->
                 $('#their_chores_performed').html ''
                 for chore in chores
                   addTheirChorePerformed chore, master_slave
+
               error: (error) ->
                 alert error.message
 
             $('#your_rewards').html 'Please Wait...'
             reward_query = new Parse.Query Reward
             reward_query.equalTo 'user', Parse.User.current()
+            reward_query.descending 'cost'
             if master_slave?
               reward_query.equalTo 'slave', master_slave
             reward_query.find
@@ -488,11 +674,21 @@ html ->
             reward_query = new Parse.Query Reward
             reward_query.equalTo 'user', master_slave
             reward_query.equalTo 'slave', Parse.User.current()
+            reward_query.descending 'cost'
             reward_query.find
               success: (rewards) ->
                 $('#their_rewards').html ''
                 for reward in rewards
                   addTheirReward reward, master_slave
+
+                $('button.claim').each ->
+                  cost = parseFloat $(@).data 'cost'
+
+                  if cost? and yourScore >= cost
+                    $(@).attr 'disabled', undefined
+                  else
+                    $(@).attr 'disabled', 'disabled'
+
               error: (error) ->
                 alert error.message
 
@@ -500,6 +696,7 @@ html ->
             reward_query = new Parse.Query RewardClaimed
             reward_query.equalTo 'master', Parse.User.current()
             reward_query.equalTo 'slave', master_slave
+            reward_query.descending 'createdAt'
             reward_query.find
               success: (rewards) ->
                 $('#your_rewards_claimed').html ''
@@ -512,6 +709,7 @@ html ->
             reward_query = new Parse.Query RewardClaimed
             reward_query.equalTo 'master', master_slave
             reward_query.equalTo 'slave', Parse.User.current()
+            reward_query.descending 'createdAt'
             reward_query.find
               success: (rewards) ->
                 $('#their_rewards_claimed').html ''
@@ -519,24 +717,29 @@ html ->
                   addTheirRewardClaimed reward, master_slave
               error: (error) ->
                 alert error.message
+
           logged_in = (user) ->
-            yourPoints = 0
-            $('#username_display').text user.get 'username'
+            subscriptions = {}
+            yourScore = 0
+            $('.username_display').text user.get 'username'
             $('#not_logged_in').hide()
             $('#logged_in').show()
-            $('#content').show()
 
             $('#master_slave_dropdown').html 'Please Wait...'
-            user_query = new Parse.Query Parse.User
+            user_query = new Parse.Query Subscription
+            user_query.equalTo 'user', Parse.User.current()
+            user_query.include 'master_slave'
             user_query.find
               success: (results) ->
                 subscriptions = {}
-                for user in results
-                  subscriptions[user.get('username')] = user
+                for subscription in results
+                  master_slave = subscription.get 'master_slave'
+                  subscriptions[master_slave.get('username')] = master_slave
                 $('#master_slave_dropdown').html master_slave_dropdown_template
                   subscriptions: results
                 .show()
               error: (error) ->
+                $('#master_slave_dropdown').html ''
                 alert error.message
 
           $('#log-in').submit (e) ->
@@ -592,7 +795,7 @@ html ->
             Parse.User.logOut()
             $('#logged_in').hide()
             $('#not_logged_in').show()
-            $('#content').hide()
+            app.setLocation '#/'
 
           $('#add-chore').click ->
             chore = new Chore
@@ -618,7 +821,7 @@ html ->
             reward.set 'cost', '10'
             reward.set 'user', Parse.User.current()
             reward.set 'slave', currentSlave
-            reward.setAcl acl
+            reward.setACL acl
             reward.save null,
               success: (reward) ->
                 reward = reward
@@ -629,8 +832,6 @@ html ->
           $('#master_slave_dropdown a[data-username]').live 'click', (e) ->
             e.preventDefault()
             username = $(@).data('username')
-            $('#yours_link').attr 'href', '#/yours/' + username
-            $('#theirs_link').attr 'href', '#/theirs/' + username
             app.setLocation '#/yours/' + username
             return false
 
@@ -638,6 +839,38 @@ html ->
             if e.which is 13 # enter key
               $(@).blur()
               return false
+
+          $('#subscribe').click (e) ->
+            sub = new Subscription
+            sub.set 'user', Parse.User.current()
+            sub.set 'master_slave', currentUserView
+            sub.save null,
+              success: (reward) ->
+                reward = reward
+                window.location.reload()
+              error: (reward, error) ->
+                alert error.message
+
+          $('#myself').click (e) ->
+            app.setLocation '#/user/' + Parse.User.current().id
+            return false
+          $('#update_myself').submit (e) ->
+            e.preventDefault()
+            $('#update_myself input').blur()
+            $('#update_myself button').button 'loading'
+            Parse.User.current().set 'username', $('#my_username').val()
+            Parse.User.current().set 'credit_singular', $('#credit_singular').val()
+            Parse.User.current().set 'credit_plural', $('#credit_plural').val()
+            return false if not Parse.User.current().dirty()
+
+            Parse.User.current().save null,
+              success: (user) ->
+                $('#update_myself button').button 'reset'
+                logged_in user
+              error: (user, error) ->
+                $('#update_myself button').button 'reset'
+                alert error.message
+            return false
 
           if Parse.User.current()
             logged_in Parse.User.current()

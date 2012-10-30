@@ -145,11 +145,11 @@ html ->
               input id:'my_username', class:'input-xlarge', type:'text', name:'my_username'
 
           div class:'control-group', ->
-            label class:'control-label', for:'credit_singular', 'Your Point Name'
+            label class:'control-label', for:'credit_singular', 'Your Currency Name'
             div class:'controls', ->
               input id:'credit_singular', class:'input-xlarge', type:'text', name:'credit_singular'
           div class:'control-group', ->
-            label class:'control-label', for:'credit_plural', 'Your Point Name (Plural)'
+            label class:'control-label', for:'credit_plural', 'Your Currency Name (Plural)'
             div class:'controls', ->
               input id:'credit_plural', class:'input-xlarge', type:'text', name:'credit_plural'
           div class:'control-group', ->
@@ -567,12 +567,11 @@ html ->
 
             return el
 
-          window.updateClaimButtons = ->
+          updateClaimButtons = ->
             $('button.claim').each ->
               cost = parseFloat $(@).data 'cost'
-
               if (cost?) and (yourScore >= cost)
-                $(@).attr 'disabled', undefined
+                $(@).attr 'disabled', false
               else
                 $(@).attr 'disabled', 'disabled'
 
@@ -616,7 +615,6 @@ html ->
             
             slaveScore = 0
             yourScore = 0
-            updateClaimButtons()
 
             $('body').data
               populatedFor: master_slave.get 'username'
@@ -736,6 +734,7 @@ html ->
             $('#logged_in').show()
 
             $('#master_slave_dropdown').html 'Please Wait...'
+
             user_query = new Parse.Query Subscription
             user_query.equalTo 'user', Parse.User.current()
             user_query.include 'master_slave'
@@ -745,6 +744,7 @@ html ->
                 for subscription in results
                   master_slave = subscription.get 'master_slave'
                   subscriptions[master_slave.get('username')] = master_slave
+
                 $('#master_slave_dropdown').html master_slave_dropdown_template
                   subscriptions: results
                 .show()
@@ -854,6 +854,11 @@ html ->
             sub = new Subscription
             sub.set 'user', Parse.User.current()
             sub.set 'master_slave', currentUserView
+            acl = new Parse.ACL Parse.User.current()
+            acl.setPublicReadAccess false
+            acl.setPublicWriteAccess false
+            acl.setReadAccess currentUserView, true
+            sub.setACL acl
             sub.save null,
               success: (reward) ->
                 reward = reward

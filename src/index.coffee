@@ -237,7 +237,7 @@ html ->
             ul id:'their_rewards_claimed', class:'item_list'
 
 
-    script src:'//code.jquery.com/jquery-1.7.1.min.js'
+    script src:'//code.jquery.com/jquery-1.7.2.js'
     script src:'//www.parsecdn.com/js/parse-1.1.6.min.js'
     script src:'//cdnjs.cloudflare.com/ajax/libs/moment.js/1.7.2/moment.min.js'
     script src:'//cdnjs.cloudflare.com/ajax/libs/sammy.js/0.7.1/sammy.min.js'
